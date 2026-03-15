@@ -1,4 +1,4 @@
-import KnowledgeGraph from "@/components/Graph";
+import KnowledgeGraph from "@/components/graph/Graph";
 
 export default function page() {
   return (

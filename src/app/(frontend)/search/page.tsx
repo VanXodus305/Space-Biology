@@ -1,4 +1,4 @@
-import QueryGraphExplorer from "@/components/QueryGraphExplorer";
+import QueryGraphExplorer from "@/components/search/QueryGraphExplorer";
 
 export default function ExplorePage() {
   return (
