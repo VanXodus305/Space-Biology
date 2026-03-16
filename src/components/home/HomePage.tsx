@@ -4,119 +4,80 @@ import { AboutSection } from "./About";
 import { HeroSection } from "./Hero";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { BarChart3, Zap } from "lucide-react";
+import { ArrowRight, Terminal } from "lucide-react";
 
 export const HomePage: React.FC = () => {
   return (
-    <div className="bg-gray-950 text-white min-h-screen">
+    <div className="bg-slate-950 text-slate-200 min-h-screen">
       <HeroSection />
 
-      <section className="relative w-full bg-gradient-to-b from-gray-950 via-gray-950 to-gray-950 py-20 overflow-hidden">
-        <motion.div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-sky-500/15 rounded-full blur-3xl"
-          animate={{
-            scale: [1, 1.3, 1],
-            opacity: [0.1, 0.2, 0.1],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
-
-        <div className="relative z-10 max-w-6xl mx-auto px-6">
+      <section className="relative w-full bg-slate-950 py-28 border-t border-slate-800/50">
+        <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="bg-slate-900/60 border border-sky-500/20 rounded-2xl p-8 md:p-12 text-center backdrop-blur-sm shadow-xl shadow-sky-500/10"
+            transition={{ duration: 0.5 }}
           >
-            <motion.div
-              className="mb-6"
-              whileHover={{ scale: 1.1, rotate: 5 }}
-              transition={{ duration: 0.3 }}
-            >
-              <div className="inline-block p-4 bg-gradient-to-br from-sky-500 to-blue-600 rounded-2xl mb-4 shadow-lg shadow-sky-500/30">
-                <BarChart3 className="w-12 h-12 text-white" aria-hidden />
-              </div>
-            </motion.div>
+            <p className="text-sm font-semibold uppercase tracking-widest text-cyan-500 mb-4">
+              Interactive Data
+            </p>
 
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-sky-400 to-blue-400 bg-clip-text text-transparent mb-4">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6 tracking-tight">
               Explore the Knowledge Graph
             </h2>
 
-            <p className="text-slate-300 text-lg mb-2 max-w-2xl mx-auto">
-              Dive into 74,000+ interconnected relationships from space biology
-              research
+            <p className="text-base md:text-lg text-slate-400 mb-4 max-w-2xl mx-auto leading-relaxed">
+              Navigate 74,000+ interconnected relationships from space biology
+              research through a 3D force-directed visualization.
             </p>
-            <p className="text-slate-400 text-sm mb-8 max-w-2xl mx-auto">
-              Interactive force-directed visualization powered by
-              react-force-graph
+            <p className="text-sm text-slate-500 mb-10">
+              Powered by react-force-graph with real-time interaction
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
               <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
               >
                 <Link
                   href="/explore"
-                  className="px-8 py-4 bg-gradient-to-r from-sky-500 to-blue-600 text-white font-semibold rounded-lg hover:shadow-2xl hover:shadow-sky-500/30 transition-all duration-300 flex items-center gap-2"
+                  className="px-8 py-4 bg-cyan-600 hover:bg-cyan-500 text-white text-base font-semibold rounded-lg flex items-center gap-2.5 transition-colors shadow-lg shadow-cyan-500/20"
                 >
-                  <Zap className="w-5 h-5" aria-hidden />
                   Launch Knowledge Graph
+                  <ArrowRight className="w-5 h-5" aria-hidden />
                 </Link>
               </motion.div>
 
               <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
               >
                 <Link
                   href="/search"
-                  className="px-8 py-4 bg-slate-800/50 border border-slate-600 hover:border-sky-500/50 text-slate-200 font-semibold rounded-lg hover:bg-slate-800/70 transition-all duration-300"
+                  className="px-8 py-4 bg-slate-800 hover:bg-slate-700 border border-slate-600 hover:border-slate-500 text-slate-200 text-base font-semibold rounded-lg flex items-center gap-2.5 transition-colors"
                 >
-                  Query Knowledge Graph
+                  <Terminal className="w-5 h-5" aria-hidden />
+                  Query Database
                 </Link>
               </motion.div>
             </div>
 
-            <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
-              <motion.div
-                whileHover={{ y: -5, scale: 1.02 }}
-                className="p-4 bg-slate-900/60 border border-sky-500/20 rounded-lg group hover:border-sky-500/40 transition-all duration-300"
-              >
-                <div className="text-2xl font-bold bg-gradient-to-r from-sky-400 to-blue-400 bg-clip-text text-transparent mb-1">
-                  74,250+
+            <div className="grid grid-cols-3 gap-6 max-w-xl mx-auto">
+              {[
+                { value: "74,250+", label: "Verified Relationships" },
+                { value: "Interactive", label: "Drag, Zoom, Explore" },
+                { value: "Real-time", label: "Dynamic Force Layout" },
+              ].map((stat) => (
+                <div key={stat.label} className="text-center">
+                  <div className="text-xl md:text-2xl font-bold text-cyan-400 tabular-nums mb-1">
+                    {stat.value}
+                  </div>
+                  <div className="text-xs text-slate-500 font-medium">
+                    {stat.label}
+                  </div>
                 </div>
-                <div className="text-xs text-slate-400 group-hover:text-slate-300 transition-colors">
-                  Verified Relationships
-                </div>
-              </motion.div>
-              <motion.div
-                whileHover={{ y: -5, scale: 1.02 }}
-                className="p-4 bg-slate-900/60 border border-sky-500/20 rounded-lg group hover:border-sky-500/40 transition-all duration-300"
-              >
-                <div className="text-2xl font-bold bg-gradient-to-r from-sky-400 to-blue-400 bg-clip-text text-transparent mb-1">
-                  Interactive
-                </div>
-                <div className="text-xs text-slate-400 group-hover:text-slate-300 transition-colors">
-                  Drag, Zoom, Explore
-                </div>
-              </motion.div>
-              <motion.div
-                whileHover={{ y: -5, scale: 1.02 }}
-                className="p-4 bg-slate-900/60 border border-sky-500/20 rounded-lg group hover:border-sky-500/40 transition-all duration-300"
-              >
-                <div className="text-2xl font-bold bg-gradient-to-r from-sky-400 to-blue-400 bg-clip-text text-transparent mb-1">
-                  Real-time
-                </div>
-                <div className="text-xs text-slate-400 group-hover:text-slate-300 transition-colors">
-                  Dynamic Force Layout
-                </div>
-              </motion.div>
+              ))}
             </div>
           </motion.div>
         </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { X, Zap, Users } from "lucide-react";
+import { X, ArrowRight, Network } from "lucide-react";
 import type { NodeInfo, Node, GraphNode } from "@/types/graph";
 
 interface NodeInfoPanelProps {
@@ -23,63 +23,64 @@ export function NodeInfoPanel({
 }: NodeInfoPanelProps) {
   return (
     <motion.div
-      initial={{ opacity: 0, x: 20 }}
+      initial={{ opacity: 0, x: 16 }}
       animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 20 }}
-      className={`relative w-80 bg-slate-900/95 border border-sky-500/20 rounded-2xl p-6 shadow-xl shadow-sky-500/10 backdrop-blur-xl overflow-y-auto ${className}`}
+      exit={{ opacity: 0, x: 16 }}
+      transition={{ duration: 0.2 }}
+      className={`relative w-80 bg-slate-900 border border-slate-700 rounded-lg overflow-y-auto ${className}`}
       style={{ maxHeight }}
     >
-      <button
-        onClick={onClose}
-        className="absolute top-4 right-4 bg-slate-800/50 hover:bg-sky-500/20 border border-slate-700 rounded-lg p-2 transition-all focus:outline-none focus:ring-2 focus:ring-sky-500"
-        aria-label="Close node details"
-      >
-        <X className="w-4 h-4 text-slate-400" />
-      </button>
-
-      <div className="mb-6">
-        <div className="flex items-center gap-2 mb-2">
-          <div className="bg-sky-500/20 p-2 rounded-lg border border-sky-500/30">
-            {selectedNode.group === 1 ? "📍" : "🎯"}
-          </div>
-          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-            {selectedNode.group === 1 ? "Subject Node" : "Object Node"}
+      <div className="sticky top-0 bg-slate-900 border-b border-slate-800 px-5 py-3 flex items-center justify-between z-10">
+        <div className="flex items-center gap-2">
+          <span
+            className={`inline-block w-2.5 h-2.5 rounded-full ${
+              selectedNode.group === 1 ? "bg-cyan-500" : "bg-teal-400"
+            }`}
+          />
+          <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+            {selectedNode.group === 1 ? "Subject" : "Object"}
           </span>
         </div>
-        <h3 className="text-xl font-bold text-slate-200 break-words">
+        <button
+          onClick={onClose}
+          className="text-slate-500 hover:text-slate-300 p-1 rounded-md hover:bg-slate-800 transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-600"
+          aria-label="Close node details"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+
+      <div className="px-5 py-4">
+        <h3 className="text-base font-semibold text-slate-200 break-words leading-snug">
           {selectedNode.id}
         </h3>
-      </div>
 
-      <div className="grid grid-cols-2 gap-3 mb-6">
-        <div className="bg-slate-800/60 border border-slate-700/50 rounded-xl p-4">
-          <div className="text-2xl font-bold bg-gradient-to-r from-sky-400 to-blue-400 bg-clip-text text-transparent">
-            {selectedNode.connections}
+        <div className="flex gap-3 mt-4">
+          <div className="flex-1 bg-slate-800 rounded-md p-3">
+            <div className="text-lg font-semibold text-cyan-400 tabular-nums">
+              {selectedNode.connections}
+            </div>
+            <div className="text-[11px] text-slate-500 mt-0.5">Connections</div>
           </div>
-          <div className="text-xs text-slate-500 font-medium mt-1">
-            Connections
-          </div>
-        </div>
-        <div className="bg-slate-800/60 border border-slate-700/50 rounded-xl p-4">
-          <div className="text-2xl font-bold bg-gradient-to-r from-violet-400 to-sky-400 bg-clip-text text-transparent">
-            {selectedNode.relatedNodes.length}
-          </div>
-          <div className="text-xs text-slate-500 font-medium mt-1">
-            Related Nodes
+          <div className="flex-1 bg-slate-800 rounded-md p-3">
+            <div className="text-lg font-semibold text-teal-400 tabular-nums">
+              {selectedNode.relatedNodes.length}
+            </div>
+            <div className="text-[11px] text-slate-500 mt-0.5">Related</div>
           </div>
         </div>
       </div>
 
-      <div className="mb-6">
-        <h4 className="text-sm font-bold text-slate-400 mb-3 flex items-center gap-2">
-          <Zap className="w-4 h-4 text-sky-400" />
+      <div className="px-5 pb-4">
+        <h4 className="text-xs font-medium uppercase tracking-wider text-slate-500 mb-2 flex items-center gap-1.5">
+          <ArrowRight className="w-3 h-3 text-cyan-600" />
           Relationships ({selectedNode.relatedPredicates.length})
         </h4>
-        <div className="space-y-2 max-h-40 overflow-y-auto custom-scrollbar">
+        <div className="space-y-1 max-h-36 overflow-y-auto custom-scrollbar">
           {selectedNode.relatedPredicates.slice(0, 10).map((pred, i) => (
             <div
               key={`${pred}-${i}`}
-              className="bg-slate-800/60 border border-sky-500/20 rounded-lg px-3 py-2 text-sm text-sky-300"
+              className="bg-slate-800 rounded px-3 py-1.5 text-xs text-slate-300 font-mono"
             >
               {pred}
             </div>
@@ -87,12 +88,12 @@ export function NodeInfoPanel({
         </div>
       </div>
 
-      <div>
-        <h4 className="text-sm font-bold text-slate-400 mb-3 flex items-center gap-2">
-          <Users className="w-4 h-4 text-violet-400" />
+      <div className="px-5 pb-5">
+        <h4 className="text-xs font-medium uppercase tracking-wider text-slate-500 mb-2 flex items-center gap-1.5">
+          <Network className="w-3 h-3 text-teal-600" />
           Connected Nodes ({selectedNode.relatedNodes.length})
         </h4>
-        <div className="space-y-2 max-h-60 overflow-y-auto custom-scrollbar">
+        <div className="space-y-1 max-h-52 overflow-y-auto custom-scrollbar">
           {selectedNode.relatedNodes.slice(0, 15).map((nodeId) => (
             <button
               key={nodeId}
@@ -100,7 +101,7 @@ export function NodeInfoPanel({
                 const node = nodes.find((n) => n.id === nodeId);
                 if (node) onNodeClick(node as GraphNode);
               }}
-              className="w-full bg-slate-800/60 border border-slate-700/50 hover:border-sky-500/30 rounded-lg px-3 py-2 text-sm text-sky-300 text-left transition-all hover:bg-sky-500/10 focus:outline-none focus:ring-2 focus:ring-sky-500/50"
+              className="w-full bg-slate-800 hover:bg-slate-750 border border-transparent hover:border-cyan-800/50 rounded px-3 py-1.5 text-xs text-slate-300 text-left transition-colors focus:outline-none focus:ring-1 focus:ring-cyan-600"
             >
               {nodeId}
             </button>

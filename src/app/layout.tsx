@@ -55,11 +55,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable}`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <a
           href="#main-content"
-          className="fixed -top-20 left-4 z-[100] px-4 py-2 bg-sky-500 text-white rounded-lg transition-[top] duration-200 focus:top-4 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-2 focus:ring-offset-gray-950"
+          className="fixed -top-20 left-4 z-[100] px-4 py-2 bg-cyan-600 text-white text-sm font-medium rounded-md transition-[top] duration-200 focus:top-4 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 focus:ring-offset-slate-950"
         >
           Skip to main content
         </a>

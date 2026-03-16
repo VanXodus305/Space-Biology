@@ -190,154 +190,124 @@ export default function KnowledgeGraph() {
 
   if (loading)
     return (
-      <div className="text-center text-slate-400 py-20">
-        <div className="inline-block relative">
-          <div className="w-16 h-16 border-4 border-sky-500/30 border-t-sky-500 rounded-full animate-spin"></div>
-        </div>
-        <p className="mt-4 text-lg">Loading Space Biology Knowledge Graph...</p>
+      <div className="flex flex-col items-center justify-center py-32 text-slate-500">
+        <div className="w-10 h-10 border-2 border-slate-700 border-t-cyan-500 rounded-full animate-spin"></div>
+        <p className="mt-4 text-sm">Loading knowledge graph&hellip;</p>
       </div>
     );
 
   return (
-    <div className="flex mt-6 justify-center items-center w-full mb-16 flex-col">
-      <div className="w-[95%] max-w-6xl mb-4 flex gap-4 items-stretch flex-wrap">
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="flex-1 min-w-[200px] bg-slate-900/90 backdrop-blur-xl border border-sky-500/20 rounded-xl p-4 shadow-xl shadow-sky-500/10"
-        >
-          <div className="flex items-center gap-3">
-            <div className="bg-sky-500/20 p-2 rounded-lg border border-sky-500/30">
-              <Search className="w-5 h-5 text-sky-400" aria-hidden />
-            </div>
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => handleSearch(e.target.value)}
-              placeholder="Search nodes... (e.g., 'microgravity', 'bone loss')"
-              className="flex-1 bg-slate-800/60 border border-slate-700 text-slate-200 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 placeholder-slate-600 transition-all"
-              aria-label="Search nodes in knowledge graph"
-            />
-            {searchTerm && (
-              <button
-                onClick={() => {
-                  setSearchTerm("");
-                  setHighlightNodes(new Set());
-                  setHighlightLinksKeys(new Set());
-                }}
-                className="bg-slate-800/50 hover:bg-slate-700/50 border border-slate-700 rounded-lg p-2 transition-all focus:outline-none focus:ring-2 focus:ring-sky-500"
-                aria-label="Clear search"
-              >
-                <X className="w-5 h-5 text-slate-400" />
-              </button>
-            )}
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="bg-slate-900/90 backdrop-blur-xl border border-sky-500/20 rounded-xl p-4 shadow-xl shadow-sky-500/10"
-        >
-          <div className="flex items-center gap-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold bg-gradient-to-r from-sky-400 to-blue-400 bg-clip-text text-transparent">
-                {stats.totalNodes}
-              </div>
-              <div className="text-xs text-slate-500 font-medium">Nodes</div>
-            </div>
-            <div className="w-px h-10 bg-slate-700"></div>
-            <div className="text-center">
-              <div className="text-2xl font-bold bg-gradient-to-r from-sky-400 to-blue-400 bg-clip-text text-transparent">
-                {stats.totalLinks}
-              </div>
-              <div className="text-xs text-slate-500 font-medium">Links</div>
-            </div>
-            <div className="w-px h-10 bg-slate-700"></div>
-            <div className="text-center">
-              <div className="text-2xl font-bold bg-gradient-to-r from-sky-400 to-blue-400 bg-clip-text text-transparent">
-                {stats.avgConnections.toFixed(1)}
-              </div>
-              <div className="text-xs text-slate-500 font-medium">Avg Links</div>
-            </div>
-          </div>
-        </motion.div>
-      </div>
-
-      <div className="w-[95%] max-w-6xl mb-4 bg-slate-900/90 backdrop-blur-xl border border-sky-500/20 rounded-xl p-5 shadow-xl shadow-sky-500/10">
-        <div className="flex items-center justify-center mb-3">
-          <span className="text-sky-400 font-bold text-sm tracking-wider">
-            INTERACTIVE CONTROLS
-          </span>
+    <div className="flex mt-14 justify-center items-center w-full mb-12 flex-col px-4">
+      <div className="w-full max-w-6xl mb-3 flex gap-3 items-stretch flex-wrap">
+        <div className="flex-1 min-w-[200px] bg-slate-900 border border-slate-800 rounded-lg p-3 flex items-center gap-3">
+          <Search className="w-4 h-4 text-slate-500 flex-shrink-0" aria-hidden />
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => handleSearch(e.target.value)}
+            placeholder="Search nodes..."
+            className="flex-1 bg-transparent text-sm text-slate-200 placeholder-slate-600 focus:outline-none"
+            aria-label="Search nodes in knowledge graph"
+          />
+          {searchTerm && (
+            <button
+              onClick={() => {
+                setSearchTerm("");
+                setHighlightNodes(new Set());
+                setHighlightLinksKeys(new Set());
+              }}
+              className="text-slate-500 hover:text-slate-300 p-1 rounded hover:bg-slate-800 transition-colors focus:outline-none focus:ring-1 focus:ring-cyan-600"
+              aria-label="Clear search"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
         </div>
-        <div className="flex flex-wrap justify-center gap-3">
-          <div className="flex items-center gap-2 bg-slate-800/60 border border-sky-500/20 rounded-lg px-4 py-2 hover:border-sky-500/40 transition-colors">
-            <span className="text-sky-400 font-bold text-xs">LEFT</span>
-            <span className="text-slate-400 text-xs font-bold">Rotate</span>
-          </div>
-          <div className="flex items-center gap-2 bg-slate-800/60 border border-sky-500/20 rounded-lg px-4 py-2 hover:border-sky-500/40 transition-colors">
-            <span className="text-sky-400 font-bold text-xs">WHEEL</span>
-            <span className="text-slate-400 text-xs font-bold">Zoom</span>
-          </div>
-          <div className="flex items-center gap-2 bg-slate-800/60 border border-sky-500/20 rounded-lg px-4 py-2 hover:border-sky-500/40 transition-colors">
-            <span className="text-sky-400 font-bold text-xs">RIGHT</span>
-            <span className="text-slate-400 text-xs font-bold">Pan</span>
-          </div>
-          <div className="flex items-center gap-2 bg-slate-800/60 border border-sky-500/20 rounded-lg px-4 py-2 hover:border-sky-500/40 transition-colors">
-            <span className="text-sky-400 font-bold text-xs">CLICK</span>
-            <span className="text-slate-400 text-xs font-bold">Node Info</span>
-          </div>
+
+        <div className="bg-slate-900 border border-slate-800 rounded-lg p-3 flex items-center gap-5">
+          {[
+            { value: stats.totalNodes, label: "Nodes" },
+            { value: stats.totalLinks, label: "Links" },
+            { value: stats.avgConnections.toFixed(1), label: "Avg" },
+          ].map((s, i) => (
+            <div key={s.label} className="flex items-center gap-5">
+              {i > 0 && <div className="w-px h-6 bg-slate-800" />}
+              <div className="text-center">
+                <div className="text-sm font-semibold text-cyan-400 tabular-nums">
+                  {s.value}
+                </div>
+                <div className="text-[10px] text-slate-500">{s.label}</div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
-      <div className="w-[95%] max-w-6xl flex gap-4 flex-col lg:flex-row">
-        <div className="relative flex-1 min-h-[400px] lg:min-h-[100vh] h-[70vh] lg:h-[100vh] bg-gray-950 border border-slate-800 rounded-2xl overflow-hidden shadow-lg flex items-center justify-center">
+      <div className="w-full max-w-6xl mb-3 bg-slate-900 border border-slate-800 rounded-lg px-4 py-2.5">
+        <div className="flex flex-wrap items-center justify-center gap-4 text-xs">
+          {[
+            { key: "LEFT", action: "Rotate" },
+            { key: "WHEEL", action: "Zoom" },
+            { key: "RIGHT", action: "Pan" },
+            { key: "CLICK", action: "Select" },
+          ].map((ctrl) => (
+            <div key={ctrl.key} className="flex items-center gap-1.5">
+              <kbd className="bg-slate-800 text-cyan-500 px-1.5 py-0.5 rounded text-[10px] font-mono font-medium border border-slate-700">
+                {ctrl.key}
+              </kbd>
+              <span className="text-slate-500">{ctrl.action}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="w-full max-w-6xl flex gap-3 flex-col lg:flex-row">
+        <div className="relative flex-1 min-h-[400px] lg:min-h-[100vh] h-[70vh] lg:h-[100vh] bg-slate-950 border border-slate-800 rounded-lg overflow-hidden flex items-center justify-center">
           <ForceGraph3D
             graphData={data}
             nodeAutoColorBy="group"
             nodeRelSize={6}
-            backgroundColor="#030712"
+            backgroundColor="#020617"
             linkColor={(link: { source?: unknown; target?: unknown }) => {
               const { source, target } = getLinkSourceTarget(link);
 
               if (highlightLinksKeys.size > 0) {
                 const isHighlighted = isLinkHighlighted(link);
                 return isHighlighted
-                  ? "rgba(56, 189, 248, 0.9)"
-                  : "rgba(56, 189, 248, 0.15)";
+                  ? "rgba(6, 182, 212, 0.85)"
+                  : "rgba(6, 182, 212, 0.08)";
               }
 
               if (hoveredNode && (source === hoveredNode || target === hoveredNode)) {
-                return "rgba(56, 189, 248, 0.9)";
+                return "rgba(6, 182, 212, 0.85)";
               }
-              return "rgba(56, 189, 248, 0.3)";
+              return "rgba(6, 182, 212, 0.18)";
             }}
             linkWidth={(link: { source?: unknown; target?: unknown }) => {
               if (highlightLinksKeys.size > 0 && isLinkHighlighted(link)) {
-                return 4;
+                return 3;
               }
               const { source, target } = getLinkSourceTarget(link);
               if (hoveredNode && (source === hoveredNode || target === hoveredNode)) {
-                return 3;
+                return 2.5;
               }
-              return 1;
+              return 0.8;
             }}
             nodeLabel={(node: { id?: string | number; group?: number }) => `
               <div style="
-                background: linear-gradient(135deg, rgba(14, 165, 233, 0.95), rgba(56, 189, 248, 0.95));
-                color: white;
-                padding: 12px 16px;
-                border-radius: 12px;
+                background: #0f172a;
+                color: #e2e8f0;
+                padding: 8px 12px;
+                border-radius: 6px;
                 font-family: system-ui, -apple-system, sans-serif;
-                font-size: 14px;
-                font-weight: 600;
-                border: 2px solid rgba(255, 255, 255, 0.3);
-                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-                backdrop-filter: blur(10px);
-                max-width: 250px;
+                font-size: 12px;
+                font-weight: 500;
+                border: 1px solid #334155;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+                max-width: 220px;
                 word-wrap: break-word;
               ">
-                <div style="margin-bottom: 4px; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.9;">
+                <div style="margin-bottom: 2px; font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: ${node.group === 1 ? '#06b6d4' : '#2dd4bf'};">
                   ${node.group === 1 ? "Subject" : "Object"}
                 </div>
                 ${node.id}
@@ -361,30 +331,30 @@ export default function KnowledgeGraph() {
               const group = node.group || 1;
 
               if (isHighlighted) {
-                return group === 1 ? "#38bdf8" : "#a78bfa";
+                return group === 1 ? "#22d3ee" : "#5eead4";
               }
               if (isHovered) {
-                return "#7dd3fc";
+                return "#67e8f9";
               }
               if (highlightNodes.size > 0) {
-                return "#475569";
+                return "#334155";
               }
-              return group === 1 ? "#0ea5e9" : "#a78bfa";
+              return group === 1 ? "#06b6d4" : "#2dd4bf";
             }}
             nodeVal={(node: { id?: string | number }) => {
               const nodeId = String(node.id ?? "");
               const isHighlighted = highlightNodes.has(nodeId);
               const isHovered = hoveredNode === nodeId;
-              if (isHighlighted) return 14;
-              if (isHovered) return 12;
-              return 6;
+              if (isHighlighted) return 12;
+              if (isHovered) return 10;
+              return 5;
             }}
           />
         </div>
 
         {selectedNode && (
           <div
-            className="lg:hidden fixed inset-0 bg-black/60 z-20 backdrop-blur-sm"
+            className="lg:hidden fixed inset-0 bg-black/50 z-20"
             onClick={handleClosePanel}
             onKeyDown={(e) => e.key === "Escape" && handleClosePanel()}
             role="button"
@@ -396,10 +366,10 @@ export default function KnowledgeGraph() {
           {selectedNode && (
             <motion.div
               key="node-panel"
-              initial={{ opacity: 0, x: 20 }}
+              initial={{ opacity: 0, x: 16 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              className="lg:w-80 w-full lg:relative fixed right-0 top-0 bottom-0 lg:right-auto lg:top-auto lg:bottom-auto z-30 w-[min(20rem,100%)] lg:w-80"
+              exit={{ opacity: 0, x: 16 }}
+              className="w-[min(20rem,100%)] lg:w-80 lg:relative fixed right-0 top-0 bottom-0 lg:right-auto lg:top-auto lg:bottom-auto z-30"
             >
               <NodeInfoPanel
                 selectedNode={selectedNode}
