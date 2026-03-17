@@ -105,7 +105,7 @@ export const MusicPlayer = () => {
             animate={{ width: "auto", opacity: 1 }}
             exit={{ width: 36, opacity: 0.8 }}
             transition={{ duration: 0.25, ease: "easeOut" }}
-            className="flex items-center gap-2 px-3 py-1.5 bg-[#141414] border border-[#262626] rounded-md overflow-hidden"
+            className="flex items-center gap-2 px-3 py-1.5 bg-[#111111] border border-[#262626] rounded-full overflow-hidden shadow-[0_0_0_1px_rgba(255,255,255,0.02)]"
           >
             <button
               onClick={togglePlay}
@@ -184,7 +184,7 @@ export const MusicPlayer = () => {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -4 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute left-1/2 -translate-x-1/2 top-full mt-2 bg-[#141414] border border-[#333] rounded-md p-3 shadow-lg z-50"
+                    className="absolute left-1/2 -translate-x-1/2 top-full mt-2 bg-[#141414] border border-[#333] rounded-2xl p-3 shadow-lg z-50"
                   >
                     <div className="flex flex-col items-center gap-1.5">
                       <span className="text-[10px] text-[#666666] font-medium">
@@ -216,7 +216,7 @@ export const MusicPlayer = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="w-9 h-9 flex items-center justify-center bg-[#141414] border border-[#262626] rounded-md cursor-pointer hover:border-[#404040] transition-colors"
+            className="flex h-10 items-center justify-center gap-2 rounded-full border border-[#262626] bg-[#111111] px-3 cursor-pointer transition-colors hover:border-[#22d3ee]/40 hover:bg-[#151515]"
             role="button"
             tabIndex={0}
             aria-label="Open music player"
@@ -239,7 +239,12 @@ export const MusicPlayer = () => {
                 ))}
               </div>
             ) : (
-              <Music className="w-3.5 h-3.5 text-[#666666]" />
+              <>
+                <Music className="w-3.5 h-3.5 text-[#666666]" />
+                <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-[#666666]">
+                  Audio
+                </span>
+              </>
             )}
           </motion.div>
         )}

@@ -1,21 +1,44 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, X } from "lucide-react";
+import SpriteText from "three-spritetext";
+import { forceY } from "d3-force-3d";
 import { useDebounce } from "@/hooks/useDebounce";
 import type { Triple, Node, Link, GraphData, NodeInfo, GraphNode } from "@/types/graph";
 import {
   createNodeInfoFromClick,
   createHighlightLinkKeys,
+  extractLinkEndpoints,
   getLinkKey,
+  getNodeSize,
+  getNodeColor,
+  getLinkColorValue,
+  getLinkWidthValue,
+  getNodeTooltipHtml,
+  computeLabelThreshold,
+  getNodeLabelConfig,
+  applyEntryPositions,
+  ENTRY_ANIMATION_DURATION_EXPLORE,
+  ENTRY_PHYSICS,
+  SETTLED_PHYSICS,
+  CLUSTERED_FORCE_CONFIG,
+  type NodeRenderState,
 } from "@/utils/graph-helpers";
 import { NodeInfoPanel } from "./NodeInfoPanel";
 
-const ForceGraph3D = dynamic(() => import("react-force-graph-3d"), {
-  ssr: false,
-});
+const ForceGraph3D = dynamic(
+  () =>
+    import("react-force-graph-3d").then((mod) => {
+      const FG = mod.default;
+      return React.forwardRef<unknown, React.ComponentProps<typeof FG>>((props, ref) => (
+        <FG ref={ref as never} {...props} />
+      ));
+    }),
+  { ssr: false }
+);
 
 export default function KnowledgeGraph() {
   const [data, setData] = useState<GraphData>({ nodes: [], links: [] });
@@ -26,6 +49,9 @@ export default function KnowledgeGraph() {
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [highlightNodes, setHighlightNodes] = useState(new Set<string>());
   const [highlightLinksKeys, setHighlightLinksKeys] = useState(new Set<string>());
+  const [physicsPreset, setPhysicsPreset] = useState(ENTRY_PHYSICS);
+  const hasPlayedEntryRef = useRef(false);
+  const fgRef = useRef<{ d3Force: (name: string, fn?: unknown) => unknown; d3ReheatSimulation: () => void } | null>(null);
 
   const [stats, setStats] = useState({
     totalNodes: 0,
@@ -79,6 +105,10 @@ export default function KnowledgeGraph() {
           connections: connectionCounts.get(node.id) || 0,
         }));
 
+        if (!hasPlayedEntryRef.current) {
+          applyEntryPositions(nodes, { startY: 70, spread: 45 });
+        }
+
         setData({ nodes, links });
 
         const subjects = nodes.filter((n) => n.group === 1).length;
@@ -104,6 +134,50 @@ export default function KnowledgeGraph() {
 
     loadData();
   }, []);
+
+  useEffect(() => {
+    if (data.nodes.length === 0) return;
+    const setupForces = () => {
+      if (!fgRef.current) return;
+      const fg = fgRef.current as {
+        d3Force: (a: string, b?: unknown) => unknown;
+        d3ReheatSimulation: () => void;
+      };
+      const linkForce = fg.d3Force("link") as { distance?: (d?: number) => unknown; strength?: (d?: number) => unknown };
+      if (linkForce) {
+        if (typeof linkForce.distance === "function") linkForce.distance(CLUSTERED_FORCE_CONFIG.linkDistance);
+        if (typeof linkForce.strength === "function") linkForce.strength(CLUSTERED_FORCE_CONFIG.linkStrength);
+      }
+      const chargeForce = fg.d3Force("charge") as { strength?: (d?: number) => unknown };
+      if (chargeForce && typeof chargeForce.strength === "function") {
+        chargeForce.strength(CLUSTERED_FORCE_CONFIG.chargeStrength);
+      }
+      if (!hasPlayedEntryRef.current) {
+        const dropForce = forceY(0).strength(0.08);
+        fg.d3Force("y", dropForce);
+      }
+      fg.d3ReheatSimulation();
+    };
+    const t1 = setTimeout(setupForces, 80);
+    return () => clearTimeout(t1);
+  }, [data.nodes.length]);
+
+  useEffect(() => {
+    if (data.nodes.length === 0) return;
+    const t2 = setTimeout(() => {
+      hasPlayedEntryRef.current = true;
+      setPhysicsPreset(SETTLED_PHYSICS);
+      if (fgRef.current) {
+        const fg = fgRef.current as {
+          d3Force: (a: string, b?: unknown) => unknown;
+          d3ReheatSimulation: () => void;
+        };
+        fg.d3Force("y", null);
+        fg.d3ReheatSimulation();
+      }
+    }, ENTRY_ANIMATION_DURATION_EXPLORE);
+    return () => clearTimeout(t2);
+  }, [data.nodes.length]);
 
   const handleNodeClick = useCallback(
     (node: GraphNode) => {
@@ -167,26 +241,17 @@ export default function KnowledgeGraph() {
   const isLinkHighlighted = useCallback(
     (link: { source?: unknown; target?: unknown }) => {
       if (highlightLinksKeys.size === 0) return false;
-      const key = getLinkKey(link as Link);
-      return highlightLinksKeys.has(key);
+      return highlightLinksKeys.has(getLinkKey(link as Link));
     },
     [highlightLinksKeys]
   );
 
-  const getLinkSourceTarget = useCallback(
-    (link: { source?: unknown; target?: unknown }) => {
-      const source =
-        typeof link.source === "object" && link.source && "id" in link.source
-          ? String((link.source as { id: string }).id)
-          : String(link.source ?? "");
-      const target =
-        typeof link.target === "object" && link.target && "id" in link.target
-          ? String((link.target as { id: string }).id)
-          : String(link.target ?? "");
-      return { source, target };
-    },
-    []
+  const labelThreshold = useMemo(
+    () => computeLabelThreshold(data.nodes, 25),
+    [data.nodes]
   );
+
+  const selectedNodeId = selectedNode?.id ?? null;
 
   if (loading)
     return (
@@ -216,7 +281,7 @@ export default function KnowledgeGraph() {
                 setHighlightNodes(new Set());
                 setHighlightLinksKeys(new Set());
               }}
-              className="text-[#666666] hover:text-white p-1 rounded hover:bg-[#1c1c1c] transition-colors focus:outline-none focus:ring-1 focus:ring-[#22d3ee]"
+              className="text-[#666666] hover:text-[#22d3ee] p-1 rounded hover:bg-[#1c1c1c] transition-colors focus:outline-none focus:ring-1 focus:ring-[#22d3ee]"
               aria-label="Clear search"
             >
               <X className="w-4 h-4" />
@@ -264,55 +329,37 @@ export default function KnowledgeGraph() {
       <div className="w-full max-w-6xl flex gap-3 flex-col lg:flex-row">
         <div className="relative flex-1 min-h-[400px] lg:min-h-[100vh] h-[70vh] lg:h-[100vh] bg-[#0a0a0a] border border-[#262626] rounded-lg overflow-hidden flex items-center justify-center">
           <ForceGraph3D
+            ref={fgRef}
             graphData={data}
-            nodeAutoColorBy="group"
             nodeRelSize={6}
             backgroundColor="#0a0a0a"
+            d3AlphaDecay={physicsPreset.d3AlphaDecay}
+            d3AlphaMin={physicsPreset.d3AlphaMin}
+            cooldownTime={physicsPreset.cooldownTime}
+            cooldownTicks={physicsPreset.cooldownTicks}
             linkColor={(link: { source?: unknown; target?: unknown }) => {
-              const { source, target } = getLinkSourceTarget(link);
-
-              if (highlightLinksKeys.size > 0) {
-                const isHighlighted = isLinkHighlighted(link);
-                return isHighlighted
-                  ? "rgba(34, 211, 238, 0.85)"
-                  : "rgba(255, 255, 255, 0.04)";
-              }
-
-              if (hoveredNode && (source === hoveredNode || target === hoveredNode)) {
-                return "rgba(34, 211, 238, 0.85)";
-              }
-              return "rgba(255, 255, 255, 0.08)";
+              const { source, target } = extractLinkEndpoints(link);
+              return getLinkColorValue(
+                source,
+                target,
+                hoveredNode,
+                isLinkHighlighted(link),
+                highlightLinksKeys.size > 0
+              );
             }}
             linkWidth={(link: { source?: unknown; target?: unknown }) => {
-              if (highlightLinksKeys.size > 0 && isLinkHighlighted(link)) {
-                return 3;
-              }
-              const { source, target } = getLinkSourceTarget(link);
-              if (hoveredNode && (source === hoveredNode || target === hoveredNode)) {
-                return 2.5;
-              }
-              return 0.8;
+              const { source, target } = extractLinkEndpoints(link);
+              return getLinkWidthValue(
+                source,
+                target,
+                hoveredNode,
+                isLinkHighlighted(link),
+                highlightLinksKeys.size > 0
+              );
             }}
-            nodeLabel={(node: { id?: string | number; group?: number }) => `
-              <div style="
-                background: #141414;
-                color: #e5e5e5;
-                padding: 8px 12px;
-                border-radius: 6px;
-                font-family: system-ui, -apple-system, sans-serif;
-                font-size: 12px;
-                font-weight: 500;
-                border: 1px solid #404040;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-                max-width: 220px;
-                word-wrap: break-word;
-              ">
-                <div style="margin-bottom: 2px; font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: #a3a3a3;">
-                  ${node.group === 1 ? "Subject" : "Object"}
-                </div>
-                ${node.id}
-              </div>
-            `}
+            nodeLabel={(node: { id?: string | number; group?: number }) =>
+              getNodeTooltipHtml(node.id ?? "", node.group || 1)
+            }
             linkLabel="predicate"
             enableNodeDrag={true}
             width={undefined}
@@ -323,32 +370,46 @@ export default function KnowledgeGraph() {
               setHoveredNode(node ? String(node.id ?? "") : null);
               document.body.style.cursor = node ? "pointer" : "default";
             }}
-            nodeColor={(node: { id?: string | number; group?: number }) => {
-              const nodeId = String(node.id ?? "");
-              const isHighlighted =
-                highlightNodes.size > 0 && highlightNodes.has(nodeId);
-              const isHovered = hoveredNode === nodeId;
-              const group = node.group || 1;
-
-              if (isHighlighted) {
-                return group === 1 ? "#22d3ee" : "#facc15";
-              }
-              if (isHovered) {
-                return "#ffffff";
-              }
-              if (highlightNodes.size > 0) {
-                return "#333333";
-              }
-              return group === 1 ? "#e5e5e5" : "#a3a3a3";
+            nodeColor={(node: { id?: string | number; group?: number; connections?: number }) => {
+              const state: NodeRenderState = {
+                nodeId: String(node.id ?? ""),
+                group: node.group || 1,
+                connections: node.connections || 0,
+                hoveredNode,
+                highlightNodes,
+                selectedNodeId,
+              };
+              return getNodeColor(state);
             }}
-            nodeVal={(node: { id?: string | number }) => {
-              const nodeId = String(node.id ?? "");
-              const isHighlighted = highlightNodes.has(nodeId);
-              const isHovered = hoveredNode === nodeId;
-              if (isHighlighted) return 12;
-              if (isHovered) return 10;
-              return 5;
+            nodeVal={(node: { id?: string | number; group?: number; connections?: number }) => {
+              const state: NodeRenderState = {
+                nodeId: String(node.id ?? ""),
+                group: node.group || 1,
+                connections: node.connections || 0,
+                hoveredNode,
+                highlightNodes,
+                selectedNodeId,
+              };
+              return getNodeSize(state);
             }}
+            nodeThreeObjectExtend={true}
+            nodeThreeObject={((node: { id?: string | number; connections?: number }) => {
+              const cfg = getNodeLabelConfig(
+                String(node.id ?? ""),
+                node.connections || 0,
+                labelThreshold
+              );
+              if (!cfg) return false as unknown as object;
+              const sprite = new SpriteText(cfg.text);
+              sprite.color = cfg.color;
+              sprite.textHeight = cfg.textHeight;
+              sprite.backgroundColor = cfg.backgroundColor;
+              sprite.padding = cfg.padding;
+              sprite.borderRadius = cfg.borderRadius;
+              sprite.fontFace = "system-ui, -apple-system, sans-serif";
+              sprite.fontWeight = "500";
+              return sprite;
+            }) as never}
           />
         </div>
 

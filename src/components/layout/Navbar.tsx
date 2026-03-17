@@ -24,12 +24,12 @@ export const Navbar: React.FC = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
-      className="fixed top-0 w-full z-50 bg-[#0a0a0a]/90 backdrop-blur-xl border-b border-[#262626]"
+      className="fixed top-0 w-full z-50 bg-[#0a0a0a]/92 backdrop-blur-xl border-b border-white/10"
     >
-      <div className="flex justify-between items-center max-w-7xl mx-auto h-16 px-6 md:px-8">
-        <Link href="/" className="flex items-center gap-3">
-          <div className="bg-white p-2 rounded-lg">
-            <Atom className="w-5 h-5 text-black" aria-hidden />
+      <div className="flex justify-between items-center max-w-7xl mx-auto h-[4.5rem] px-6 md:px-8">
+        <Link href="/" className="flex items-center gap-3 group">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#262626] bg-[#141414] text-white transition-colors group-hover:border-[#22d3ee]/40 group-hover:bg-[#1a1a1a] group-hover:text-[#22d3ee]">
+            <Atom className="w-5 h-5" aria-hidden />
           </div>
           <div className="flex items-baseline gap-1.5">
             <span className="text-lg font-bold text-white tracking-tight">
@@ -45,15 +45,15 @@ export const Navbar: React.FC = () => {
           <MusicPlayer />
         </div>
 
-        <ul className="flex gap-1">
+        <ul className="flex gap-1 rounded-full border border-[#262626] bg-[#111111] p-1">
           {navLinks.map((link) => (
             <li key={link.path}>
               <Link href={link.path}>
                 <motion.div
-                  className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`relative px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                     isActive(link.path)
                       ? "text-[#22d3ee]"
-                      : "text-[#a3a3a3] hover:text-white"
+                      : "text-[#a3a3a3] hover:text-[#22d3ee]"
                   }`}
                   onHoverStart={() => setHoveredLink(link.path)}
                   onHoverEnd={() => setHoveredLink(null)}
@@ -62,7 +62,7 @@ export const Navbar: React.FC = () => {
                   {isActive(link.path) && (
                     <motion.div
                       layoutId="activeTab"
-                      className="absolute inset-0 bg-[#1c1c1c] border border-[#333] rounded-lg"
+                      className="absolute inset-0 rounded-full border border-white/10 bg-[#1c1c1c]"
                       transition={{
                         type: "spring",
                         bounce: 0.15,
@@ -73,7 +73,7 @@ export const Navbar: React.FC = () => {
 
                   {hoveredLink === link.path && !isActive(link.path) && (
                     <motion.div
-                      className="absolute inset-0 bg-[#1c1c1c]/60 rounded-lg"
+                      className="absolute inset-0 rounded-full bg-white/[0.04]"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}

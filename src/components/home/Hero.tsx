@@ -54,7 +54,7 @@ export const HeroSection: React.FC = () => {
       try {
         const controls = fgRef.current.controls();
         controls.autoRotate = true;
-        controls.autoRotateSpeed = 0.4;
+        controls.autoRotateSpeed = 0.15;
       } catch {
         /* controls may not be available yet */
       }
@@ -67,7 +67,7 @@ export const HeroSection: React.FC = () => {
       try {
         const controls = fgRef.current.controls();
         controls.autoRotate = true;
-        controls.autoRotateSpeed = 0.4;
+        controls.autoRotateSpeed = 0.15;
       } catch {
         /* controls may not be available */
       }
@@ -84,8 +84,8 @@ export const HeroSection: React.FC = () => {
             graphData={graphData}
             backgroundColor="#0a0a0a"
             nodeRelSize={4}
-            nodeColor={() => "rgba(255,255,255,0.5)"}
-            linkColor={() => "rgba(255,255,255,0.06)"}
+            nodeColor={() => "rgba(140,140,140,0.7)"}
+            linkColor={() => "rgba(255,255,255,0.85)"}
             linkWidth={0.3}
             nodeVal={3}
             enableNodeDrag={false}
@@ -150,7 +150,7 @@ export const HeroSection: React.FC = () => {
             <motion.div
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
-              className="px-8 py-4 bg-transparent border border-white/30 text-white text-base font-semibold rounded-lg inline-flex items-center gap-2.5 transition-all duration-200 hover:border-[#facc15] hover:text-[#facc15]"
+              className="px-8 py-4 bg-transparent border border-white/30 text-white text-base font-semibold rounded-lg inline-flex items-center gap-2.5 transition-all duration-200 hover:border-[#22d3ee] hover:text-[#22d3ee]"
             >
               <Terminal className="w-5 h-5" aria-hidden />
               Query Database

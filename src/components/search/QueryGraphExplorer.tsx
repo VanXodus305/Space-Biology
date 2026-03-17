@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -10,17 +10,40 @@ import {
   Trash2,
   Play,
 } from "lucide-react";
+import SpriteText from "three-spritetext";
+import { forceY } from "d3-force-3d";
 import type { Triple, Node, Link, GraphData, NodeInfo, GraphNode } from "@/types/graph";
 import {
   createNodeInfoFromClick,
   createHighlightLinkKeys,
+  extractLinkEndpoints,
   getLinkKey,
+  getNodeSize,
+  getNodeColor,
+  getLinkColorValue,
+  getLinkWidthValue,
+  getNodeTooltipHtml,
+  computeLabelThreshold,
+  getNodeLabelConfig,
+  applyEntryPositions,
+  ENTRY_ANIMATION_DURATION_QUERY,
+  ENTRY_PHYSICS,
+  SETTLED_PHYSICS,
+  CLUSTERED_FORCE_CONFIG,
+  type NodeRenderState,
 } from "@/utils/graph-helpers";
 import { NodeInfoPanel } from "@/components/graph/NodeInfoPanel";
 
-const ForceGraph3D = dynamic(() => import("react-force-graph-3d"), {
-  ssr: false,
-});
+const ForceGraph3D = dynamic(
+  () =>
+    import("react-force-graph-3d").then((mod) => {
+      const FG = mod.default;
+      return React.forwardRef<unknown, React.ComponentProps<typeof FG>>((props, ref) => (
+        <FG ref={ref as never} {...props} />
+      ));
+    }),
+  { ssr: false }
+);
 
 export default function QueryGraphExplorer() {
   const [triples, setTriples] = useState<Triple[]>([]);
@@ -36,6 +59,9 @@ export default function QueryGraphExplorer() {
   const [selectedNode, setSelectedNode] = useState<NodeInfo | null>(null);
   const [highlightNodes, setHighlightNodes] = useState(new Set<string>());
   const [highlightLinksKeys, setHighlightLinksKeys] = useState(new Set<string>());
+  const [physicsPreset, setPhysicsPreset] = useState(SETTLED_PHYSICS);
+  const queryRunIdRef = useRef(0);
+  const fgRef = useRef<{ d3Force: (name: string, fn?: unknown) => unknown; d3ReheatSimulation: () => void } | null>(null);
 
   useEffect(() => {
     fetch("/kg_triples_validated.json")
@@ -145,6 +171,13 @@ export default function QueryGraphExplorer() {
         connections: connectionCounts.get(node.id) || 0,
       }));
 
+      queryRunIdRef.current += 1;
+      applyEntryPositions(nodes, {
+        startY: 55,
+        spread: 35,
+        seed: 100 + queryRunIdRef.current,
+      });
+      setPhysicsPreset(ENTRY_PHYSICS);
       setGraphData({ nodes, links });
       setSelectedNode(null);
       setHighlightNodes(new Set());
@@ -160,6 +193,47 @@ export default function QueryGraphExplorer() {
     setHighlightLinksKeys(new Set());
   }, []);
 
+  useEffect(() => {
+    if (graphData.nodes.length === 0) return;
+    const setupForces = () => {
+      if (!fgRef.current) return;
+      const fg = fgRef.current as {
+        d3Force: (a: string, b?: unknown) => unknown;
+        d3ReheatSimulation: () => void;
+      };
+      const linkForce = fg.d3Force("link") as { distance?: (d?: number) => unknown; strength?: (d?: number) => unknown };
+      if (linkForce) {
+        if (typeof linkForce.distance === "function") linkForce.distance(CLUSTERED_FORCE_CONFIG.linkDistance);
+        if (typeof linkForce.strength === "function") linkForce.strength(CLUSTERED_FORCE_CONFIG.linkStrength);
+      }
+      const chargeForce = fg.d3Force("charge") as { strength?: (d?: number) => unknown };
+      if (chargeForce && typeof chargeForce.strength === "function") {
+        chargeForce.strength(CLUSTERED_FORCE_CONFIG.chargeStrength);
+      }
+      const dropForce = forceY(0).strength(0.06);
+      fg.d3Force("y", dropForce);
+      fg.d3ReheatSimulation();
+    };
+    const t1 = setTimeout(setupForces, 80);
+    return () => clearTimeout(t1);
+  }, [graphData.nodes.length]);
+
+  useEffect(() => {
+    if (graphData.nodes.length === 0) return;
+    const t2 = setTimeout(() => {
+      setPhysicsPreset(SETTLED_PHYSICS);
+      if (fgRef.current) {
+        const fg = fgRef.current as {
+          d3Force: (a: string, b?: unknown) => unknown;
+          d3ReheatSimulation: () => void;
+        };
+        fg.d3Force("y", null);
+        fg.d3ReheatSimulation();
+      }
+    }, ENTRY_ANIMATION_DURATION_QUERY);
+    return () => clearTimeout(t2);
+  }, [graphData.nodes.length]);
+
   const isLinkHighlighted = useCallback(
     (link: { source?: unknown; target?: unknown }) => {
       if (highlightLinksKeys.size === 0) return false;
@@ -168,20 +242,12 @@ export default function QueryGraphExplorer() {
     [highlightLinksKeys]
   );
 
-  const getLinkSourceTarget = useCallback(
-    (link: { source?: unknown; target?: unknown }) => {
-      const source =
-        typeof link.source === "object" && link.source && "id" in link.source
-          ? String((link.source as { id: string }).id)
-          : String(link.source ?? "");
-      const target =
-        typeof link.target === "object" && link.target && "id" in link.target
-          ? String((link.target as { id: string }).id)
-          : String(link.target ?? "");
-      return { source, target };
-    },
-    []
+  const labelThreshold = useMemo(
+    () => computeLabelThreshold(graphData.nodes, 25),
+    [graphData.nodes]
   );
+
+  const selectedNodeId = selectedNode?.id ?? null;
 
   if (loading)
     return (
@@ -214,7 +280,7 @@ export default function QueryGraphExplorer() {
               <button
                 key={example.label}
                 onClick={() => setQuery(example.query)}
-                className="text-xs px-2.5 py-1 bg-[#1c1c1c] hover:bg-[#262626] border border-[#333] hover:border-white/30 rounded-md text-[#a3a3a3] hover:text-white transition-colors focus:outline-none focus:ring-1 focus:ring-[#22d3ee]"
+                className="text-xs px-2.5 py-1 bg-[#1c1c1c] hover:bg-[#262626] border border-[#333] hover:border-[#22d3ee]/40 rounded-md text-[#a3a3a3] hover:text-[#22d3ee] transition-colors focus:outline-none focus:ring-1 focus:ring-[#22d3ee]"
               >
                 {example.label}
               </button>
@@ -259,7 +325,7 @@ export default function QueryGraphExplorer() {
                   setGraphData({ nodes: [], links: [] });
                   setError(null);
                 }}
-                className="px-3 py-1.5 text-xs bg-[#1c1c1c] hover:bg-[#262626] border border-[#333] rounded-md text-[#a3a3a3] hover:text-white transition-colors flex items-center gap-1.5 focus:outline-none focus:ring-1 focus:ring-[#22d3ee]"
+                className="px-3 py-1.5 text-xs bg-[#1c1c1c] hover:bg-[#262626] border border-[#333] hover:border-[#22d3ee]/40 rounded-md text-[#a3a3a3] hover:text-[#22d3ee] transition-colors flex items-center gap-1.5 focus:outline-none focus:ring-1 focus:ring-[#22d3ee]"
               >
                 <Trash2 className="w-3 h-3" />
                 Clear
@@ -313,7 +379,7 @@ export default function QueryGraphExplorer() {
                 {results.map((t, i) => (
                   <div
                     key={`${t.subject}-${t.predicate}-${t.object}-${i}`}
-                    className="bg-[#1c1c1c] border border-[#262626] hover:border-[#404040] rounded-md p-3 transition-colors"
+                    className="bg-[#1c1c1c] border border-[#262626] hover:border-[#22d3ee]/30 rounded-md p-3 transition-colors"
                   >
                     <div className="flex items-start gap-3 text-xs">
                       <ChevronRight className="w-3.5 h-3.5 text-[#404040] flex-shrink-0 mt-0.5" aria-hidden />
@@ -375,61 +441,37 @@ export default function QueryGraphExplorer() {
           <div className="flex gap-3 flex-col lg:flex-row">
             <div className="flex-1 min-h-[400px] h-[600px] bg-[#0a0a0a] border border-[#262626] rounded-lg overflow-hidden flex items-center justify-center">
               <ForceGraph3D
+                ref={fgRef}
                 graphData={graphData}
-                nodeAutoColorBy="group"
                 nodeRelSize={6}
                 backgroundColor="#0a0a0a"
+                d3AlphaDecay={physicsPreset.d3AlphaDecay}
+                d3AlphaMin={physicsPreset.d3AlphaMin}
+                cooldownTime={physicsPreset.cooldownTime}
+                cooldownTicks={physicsPreset.cooldownTicks}
                 linkColor={(link: { source?: unknown; target?: unknown }) => {
-                  const { source, target } = getLinkSourceTarget(link);
-
-                  if (highlightLinksKeys.size > 0) {
-                    const isHighlighted = isLinkHighlighted(link);
-                    return isHighlighted
-                      ? "rgba(34, 211, 238, 0.85)"
-                      : "rgba(255, 255, 255, 0.04)";
-                  }
-
-                  if (
-                    hoveredNode &&
-                    (source === hoveredNode || target === hoveredNode)
-                  ) {
-                    return "rgba(34, 211, 238, 0.85)";
-                  }
-                  return "rgba(255, 255, 255, 0.08)";
+                  const { source, target } = extractLinkEndpoints(link);
+                  return getLinkColorValue(
+                    source,
+                    target,
+                    hoveredNode,
+                    isLinkHighlighted(link),
+                    highlightLinksKeys.size > 0
+                  );
                 }}
                 linkWidth={(link: { source?: unknown; target?: unknown }) => {
-                  if (highlightLinksKeys.size > 0 && isLinkHighlighted(link)) {
-                    return 3;
-                  }
-                  const { source, target } = getLinkSourceTarget(link);
-                  if (
-                    hoveredNode &&
-                    (source === hoveredNode || target === hoveredNode)
-                  ) {
-                    return 2.5;
-                  }
-                  return 0.8;
+                  const { source, target } = extractLinkEndpoints(link);
+                  return getLinkWidthValue(
+                    source,
+                    target,
+                    hoveredNode,
+                    isLinkHighlighted(link),
+                    highlightLinksKeys.size > 0
+                  );
                 }}
-                nodeLabel={(node: { id?: string | number; group?: number }) => `
-                  <div style="
-                    background: #141414;
-                    color: #e5e5e5;
-                    padding: 8px 12px;
-                    border-radius: 6px;
-                    font-family: system-ui, -apple-system, sans-serif;
-                    font-size: 12px;
-                    font-weight: 500;
-                    border: 1px solid #404040;
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-                    max-width: 220px;
-                    word-wrap: break-word;
-                  ">
-                    <div style="margin-bottom: 2px; font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: #a3a3a3;">
-                      ${node.group === 1 ? "Subject" : "Object"}
-                    </div>
-                    ${node.id}
-                  </div>
-                `}
+                nodeLabel={(node: { id?: string | number; group?: number }) =>
+                  getNodeTooltipHtml(node.id ?? "", node.group || 1)
+                }
                 linkLabel="predicate"
                 enableNodeDrag={true}
                 width={undefined}
@@ -440,33 +482,46 @@ export default function QueryGraphExplorer() {
                   setHoveredNode(node ? String(node.id ?? "") : null);
                   document.body.style.cursor = node ? "pointer" : "default";
                 }}
-                nodeColor={(node: { id?: string | number; group?: number }) => {
-                  const nodeId = String(node.id ?? "");
-                  const isHighlighted =
-                    highlightNodes.size > 0 && highlightNodes.has(nodeId);
-                  const isHovered = hoveredNode === nodeId;
-                  const group = node.group || 1;
-
-                  if (isHighlighted) {
-                    return group === 1 ? "#22d3ee" : "#facc15";
-                  }
-                  if (isHovered) {
-                    return "#ffffff";
-                  }
-                  if (highlightNodes.size > 0) {
-                    return "#333333";
-                  }
-                  return group === 1 ? "#e5e5e5" : "#a3a3a3";
+                nodeColor={(node: { id?: string | number; group?: number; connections?: number }) => {
+                  const state: NodeRenderState = {
+                    nodeId: String(node.id ?? ""),
+                    group: node.group || 1,
+                    connections: node.connections || 0,
+                    hoveredNode,
+                    highlightNodes,
+                    selectedNodeId,
+                  };
+                  return getNodeColor(state);
                 }}
-                nodeVal={(node: { id?: string | number }) => {
-                  const nodeId = String(node.id ?? "");
-                  const isHighlighted = highlightNodes.has(nodeId);
-                  const isHovered = hoveredNode === nodeId;
-
-                  if (isHighlighted) return 12;
-                  if (isHovered) return 10;
-                  return 5;
+                nodeVal={(node: { id?: string | number; group?: number; connections?: number }) => {
+                  const state: NodeRenderState = {
+                    nodeId: String(node.id ?? ""),
+                    group: node.group || 1,
+                    connections: node.connections || 0,
+                    hoveredNode,
+                    highlightNodes,
+                    selectedNodeId,
+                  };
+                  return getNodeSize(state);
                 }}
+                nodeThreeObjectExtend={true}
+                nodeThreeObject={((node: { id?: string | number; connections?: number }) => {
+                  const cfg = getNodeLabelConfig(
+                    String(node.id ?? ""),
+                    node.connections || 0,
+                    labelThreshold
+                  );
+                  if (!cfg) return false as unknown as object;
+                  const sprite = new SpriteText(cfg.text);
+                  sprite.color = cfg.color;
+                  sprite.textHeight = cfg.textHeight;
+                  sprite.backgroundColor = cfg.backgroundColor;
+                  sprite.padding = cfg.padding;
+                  sprite.borderRadius = cfg.borderRadius;
+                  sprite.fontFace = "system-ui, -apple-system, sans-serif";
+                  sprite.fontWeight = "500";
+                  return sprite;
+                }) as never}
               />
             </div>
 

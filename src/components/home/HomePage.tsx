@@ -55,7 +55,7 @@ export const HomePage: React.FC = () => {
               >
                 <Link
                   href="/search"
-                  className="px-8 py-4 bg-transparent border border-white/30 text-white text-base font-semibold rounded-lg flex items-center gap-2.5 transition-all duration-200 hover:border-[#facc15] hover:text-[#facc15]"
+                  className="px-8 py-4 bg-transparent border border-white/30 text-white text-base font-semibold rounded-lg flex items-center gap-2.5 transition-all duration-200 hover:border-[#22d3ee] hover:text-[#22d3ee]"
                 >
                   <Terminal className="w-5 h-5" aria-hidden />
                   Query Database

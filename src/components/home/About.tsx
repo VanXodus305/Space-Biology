@@ -80,7 +80,7 @@ export const AboutSection: React.FC = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: index * 0.08 }}
-              className="group p-7 bg-[#141414] border border-[#262626] hover:border-[#404040] rounded-xl transition-all duration-300"
+              className="group p-7 bg-[#141414] border border-[#262626] hover:border-[#22d3ee]/30 rounded-xl transition-all duration-300"
             >
               <div className="inline-flex p-3 bg-[#1c1c1c] border border-[#333] rounded-lg mb-5 text-white group-hover:text-[#22d3ee] transition-colors">
                 {feature.icon}
@@ -120,7 +120,7 @@ export const AboutSection: React.FC = () => {
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.3, delay: index * 0.05 }}
-                className="p-4 bg-[#1c1c1c] border border-[#262626] hover:border-[#facc15]/30 rounded-lg text-center transition-colors"
+                className="p-4 bg-[#1c1c1c] border border-[#262626] hover:border-[#22d3ee]/30 rounded-lg text-center transition-colors"
               >
                 <div className="text-base font-semibold text-white">
                   {tech.name}

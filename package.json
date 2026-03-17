@@ -17,15 +17,16 @@
     "react-dom": "19.1.0",
     "react-force-graph": "^1.48.1",
     "react-force-graph-3d": "^1.29.0",
-    "three": "^0.180.0"
+    "three": "^0.180.0",
+    "three-spritetext": "^1.10.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
-    "@types/three": "^0.180.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/three": "^0.180.0",
     "eslint": "^9",
     "eslint-config-next": "15.5.12",
     "tailwindcss": "^4",
