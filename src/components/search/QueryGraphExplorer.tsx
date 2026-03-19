@@ -10,6 +10,7 @@ import {
   Trash2,
   Play,
 } from "lucide-react";
+import * as THREE from "three";
 import SpriteText from "three-spritetext";
 import { forceY } from "d3-force-3d";
 import type { Triple, Node, Link, GraphData, NodeInfo, GraphNode } from "@/types/graph";
@@ -505,22 +506,42 @@ export default function QueryGraphExplorer() {
                   return getNodeSize(state);
                 }}
                 nodeThreeObjectExtend={true}
-                nodeThreeObject={((node: { id?: string | number; connections?: number }) => {
+                nodeThreeObject={((node: { id?: string | number; group?: number; connections?: number }) => {
+                  const group = new THREE.Group();
+                  const state: NodeRenderState = {
+                    nodeId: String(node.id ?? ""),
+                    group: node.group || 1,
+                    connections: node.connections || 0,
+                    hoveredNode,
+                    highlightNodes,
+                    selectedNodeId,
+                  };
+                  const color = getNodeColor(state);
+                  const geometry = new THREE.SphereGeometry(1, 12, 10);
+                  const material = new THREE.MeshBasicMaterial({
+                    color,
+                    transparent: false,
+                  });
+                  const sphere = new THREE.Mesh(geometry, material);
+                  group.add(sphere);
                   const cfg = getNodeLabelConfig(
                     String(node.id ?? ""),
                     node.connections || 0,
                     labelThreshold
                   );
-                  if (!cfg) return false as unknown as object;
-                  const sprite = new SpriteText(cfg.text);
-                  sprite.color = cfg.color;
-                  sprite.textHeight = cfg.textHeight;
-                  sprite.backgroundColor = cfg.backgroundColor;
-                  sprite.padding = cfg.padding;
-                  sprite.borderRadius = cfg.borderRadius;
-                  sprite.fontFace = "system-ui, -apple-system, sans-serif";
-                  sprite.fontWeight = "500";
-                  return sprite;
+                  if (cfg) {
+                    const sprite = new SpriteText(cfg.text);
+                    sprite.color = cfg.color;
+                    sprite.textHeight = cfg.textHeight;
+                    sprite.backgroundColor = cfg.backgroundColor;
+                    sprite.padding = cfg.padding;
+                    sprite.borderRadius = cfg.borderRadius;
+                    sprite.fontFace = "system-ui, -apple-system, sans-serif";
+                    sprite.fontWeight = "500";
+                    sprite.position.y = 1.8;
+                    group.add(sprite);
+                  }
+                  return group;
                 }) as never}
               />
             </div>

@@ -50,6 +50,7 @@ export const Navbar: React.FC = () => {
             <li key={link.path}>
               <Link href={link.path}>
                 <motion.div
+                  layout
                   className={`relative px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                     isActive(link.path)
                       ? "text-[#22d3ee]"
@@ -62,11 +63,12 @@ export const Navbar: React.FC = () => {
                   {isActive(link.path) && (
                     <motion.div
                       layoutId="activeTab"
+                      layout
                       className="absolute inset-0 rounded-full border border-white/10 bg-[#1c1c1c]"
                       transition={{
                         type: "spring",
-                        bounce: 0.15,
-                        duration: 0.5,
+                        stiffness: 400,
+                        damping: 30,
                       }}
                     />
                   )}

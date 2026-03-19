@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, X } from "lucide-react";
+import * as THREE from "three";
 import SpriteText from "three-spritetext";
 import { forceY } from "d3-force-3d";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -163,7 +164,8 @@ export default function KnowledgeGraph() {
   }, [data.nodes.length]);
 
   useEffect(() => {
-    if (data.nodes.length === 0) return;
+    if (data.nodes.length === 0 || loading) return;
+    let cleanup: (() => void) | undefined;
     const t2 = setTimeout(() => {
       hasPlayedEntryRef.current = true;
       setPhysicsPreset(SETTLED_PHYSICS);
@@ -171,13 +173,41 @@ export default function KnowledgeGraph() {
         const fg = fgRef.current as {
           d3Force: (a: string, b?: unknown) => unknown;
           d3ReheatSimulation: () => void;
+          controls: () => {
+            autoRotate?: boolean;
+            addEventListener?: (e: string, fn: () => void) => void;
+            removeEventListener?: (e: string, fn: () => void) => void;
+          };
         };
         fg.d3Force("y", null);
         fg.d3ReheatSimulation();
+        try {
+          const controls = fg.controls();
+          if (controls) {
+            controls.autoRotate = true;
+            (controls as { autoRotateSpeed?: number }).autoRotateSpeed = 0.2;
+            const onStart = () => {
+              controls.autoRotate = false;
+            };
+            if (typeof controls.addEventListener === "function") {
+              controls.addEventListener("start", onStart);
+              cleanup = () => {
+                if (typeof controls.removeEventListener === "function") {
+                  controls.removeEventListener("start", onStart);
+                }
+              };
+            }
+          }
+        } catch {
+          /* controls may not be available */
+        }
       }
     }, ENTRY_ANIMATION_DURATION_EXPLORE);
-    return () => clearTimeout(t2);
-  }, [data.nodes.length]);
+    return () => {
+      clearTimeout(t2);
+      cleanup?.();
+    };
+  }, [data.nodes.length, loading]);
 
   const handleNodeClick = useCallback(
     (node: GraphNode) => {
@@ -253,14 +283,6 @@ export default function KnowledgeGraph() {
 
   const selectedNodeId = selectedNode?.id ?? null;
 
-  if (loading)
-    return (
-      <div className="flex flex-col items-center justify-center py-32 text-[#666666]">
-        <div className="w-10 h-10 border-2 border-[#262626] border-t-white rounded-full animate-spin"></div>
-        <p className="mt-4 text-sm">Loading knowledge graph&hellip;</p>
-      </div>
-    );
-
   return (
     <div className="flex mt-14 justify-center items-center w-full mb-12 flex-col px-4">
       <div className="w-full max-w-6xl mb-3 flex gap-3 items-stretch flex-wrap">
@@ -328,6 +350,12 @@ export default function KnowledgeGraph() {
 
       <div className="w-full max-w-6xl flex gap-3 flex-col lg:flex-row">
         <div className="relative flex-1 min-h-[400px] lg:min-h-[100vh] h-[70vh] lg:h-[100vh] bg-[#0a0a0a] border border-[#262626] rounded-lg overflow-hidden flex items-center justify-center">
+          {loading && (
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-[#0a0a0a]/95 text-[#666666]">
+              <div className="w-10 h-10 border-2 border-[#262626] border-t-white rounded-full animate-spin" />
+              <p className="mt-4 text-sm">Loading knowledge graph&hellip;</p>
+            </div>
+          )}
           <ForceGraph3D
             ref={fgRef}
             graphData={data}
@@ -369,6 +397,14 @@ export default function KnowledgeGraph() {
             onNodeHover={(node: { id?: string | number } | null) => {
               setHoveredNode(node ? String(node.id ?? "") : null);
               document.body.style.cursor = node ? "pointer" : "default";
+              if (node && fgRef.current) {
+                try {
+                  const controls = (fgRef.current as { controls?: () => { autoRotate?: boolean } }).controls?.();
+                  if (controls) controls.autoRotate = false;
+                } catch {
+                  /* ignore */
+                }
+              }
             }}
             nodeColor={(node: { id?: string | number; group?: number; connections?: number }) => {
               const state: NodeRenderState = {
@@ -393,22 +429,42 @@ export default function KnowledgeGraph() {
               return getNodeSize(state);
             }}
             nodeThreeObjectExtend={true}
-            nodeThreeObject={((node: { id?: string | number; connections?: number }) => {
+            nodeThreeObject={((node: { id?: string | number; group?: number; connections?: number }) => {
+              const group = new THREE.Group();
+              const state: NodeRenderState = {
+                nodeId: String(node.id ?? ""),
+                group: node.group || 1,
+                connections: node.connections || 0,
+                hoveredNode,
+                highlightNodes,
+                selectedNodeId,
+              };
+              const color = getNodeColor(state);
+              const geometry = new THREE.SphereGeometry(1, 12, 10);
+              const material = new THREE.MeshBasicMaterial({
+                color,
+                transparent: false,
+              });
+              const sphere = new THREE.Mesh(geometry, material);
+              group.add(sphere);
               const cfg = getNodeLabelConfig(
                 String(node.id ?? ""),
                 node.connections || 0,
                 labelThreshold
               );
-              if (!cfg) return false as unknown as object;
-              const sprite = new SpriteText(cfg.text);
-              sprite.color = cfg.color;
-              sprite.textHeight = cfg.textHeight;
-              sprite.backgroundColor = cfg.backgroundColor;
-              sprite.padding = cfg.padding;
-              sprite.borderRadius = cfg.borderRadius;
-              sprite.fontFace = "system-ui, -apple-system, sans-serif";
-              sprite.fontWeight = "500";
-              return sprite;
+              if (cfg) {
+                const sprite = new SpriteText(cfg.text);
+                sprite.color = cfg.color;
+                sprite.textHeight = cfg.textHeight;
+                sprite.backgroundColor = cfg.backgroundColor;
+                sprite.padding = cfg.padding;
+                sprite.borderRadius = cfg.borderRadius;
+                sprite.fontFace = "system-ui, -apple-system, sans-serif";
+                sprite.fontWeight = "500";
+                sprite.position.y = 1.8;
+                group.add(sprite);
+              }
+              return group;
             }) as never}
           />
         </div>
