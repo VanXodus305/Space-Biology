@@ -28,7 +28,7 @@ export const Navbar: React.FC = () => {
     >
       <div className="flex justify-between items-center max-w-7xl mx-auto h-[4.5rem] px-6 md:px-8">
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#262626] bg-[#141414] text-white transition-colors group-hover:border-[#22d3ee]/40 group-hover:bg-[#1a1a1a] group-hover:text-[#22d3ee]">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#262626] bg-[#141414] text-white transition-colors group-hover:border-[#e8e8e8]/40 group-hover:bg-[#1a1a1a] group-hover:text-white">
             <Atom className="w-5 h-5" aria-hidden />
           </div>
           <div className="flex items-baseline gap-1.5">
@@ -53,8 +53,8 @@ export const Navbar: React.FC = () => {
                   layout
                   className={`relative px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                     isActive(link.path)
-                      ? "text-[#22d3ee]"
-                      : "text-[#a3a3a3] hover:text-[#22d3ee]"
+                      ? "text-[#e8e8e8]"
+                      : "text-[#a3a3a3] hover:text-white"
                   }`}
                   onHoverStart={() => setHoveredLink(link.path)}
                   onHoverEnd={() => setHoveredLink(null)}

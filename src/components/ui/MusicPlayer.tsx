@@ -109,7 +109,7 @@ export const MusicPlayer = () => {
           >
             <button
               onClick={togglePlay}
-              className="w-7 h-7 flex-shrink-0 flex items-center justify-center rounded-md text-[#a3a3a3] hover:text-[#22d3ee] hover:bg-[#1c1c1c] transition-colors focus:outline-none focus:ring-1 focus:ring-[#22d3ee]"
+              className="w-7 h-7 flex-shrink-0 flex items-center justify-center rounded-md text-[#a3a3a3] hover:text-white hover:bg-[#1c1c1c] transition-colors focus:outline-none focus:ring-1 focus:ring-[#e8e8e8]"
               aria-label={isPlaying ? "Pause music" : "Play music"}
             >
               {isPlaying ? (
@@ -134,7 +134,7 @@ export const MusicPlayer = () => {
                     {[0, 1, 2, 3].map((i) => (
                       <motion.div
                         key={i}
-                        className="w-0.5 bg-[#22d3ee] rounded-full"
+                        className="w-0.5 bg-[#e8e8e8] rounded-full"
                         animate={{ height: ["3px", "12px", "3px"] }}
                         transition={{
                           duration: 0.5,
@@ -216,7 +216,7 @@ export const MusicPlayer = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="flex h-10 items-center justify-center gap-2 rounded-full border border-[#262626] bg-[#111111] px-3 cursor-pointer transition-colors hover:border-[#22d3ee]/40 hover:bg-[#151515]"
+            className="flex h-10 items-center justify-center gap-2 rounded-full border border-[#262626] bg-[#111111] px-3 cursor-pointer transition-colors hover:border-[#e8e8e8]/40 hover:bg-[#151515]"
             role="button"
             tabIndex={0}
             aria-label="Open music player"
@@ -227,7 +227,7 @@ export const MusicPlayer = () => {
                 {[0, 1, 2].map((i) => (
                   <motion.div
                     key={i}
-                    className="w-0.5 bg-[#22d3ee] rounded-full"
+                    className="w-0.5 bg-[#e8e8e8] rounded-full"
                     animate={{ height: ["2px", "10px", "2px"] }}
                     transition={{
                       duration: 0.5,

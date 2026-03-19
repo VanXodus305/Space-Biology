@@ -139,7 +139,7 @@ export const HeroSection: React.FC = () => {
             <motion.div
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
-              className="px-8 py-4 bg-white text-black text-base font-semibold rounded-lg inline-flex items-center gap-2.5 transition-all duration-200 hover:bg-[#22d3ee] hover:text-black shadow-lg hover:shadow-[#22d3ee]/20"
+              className="px-8 py-4 bg-white text-black text-base font-semibold rounded-lg inline-flex items-center gap-2.5 transition-all duration-200 hover:bg-[#e8e8e8] hover:text-black shadow-lg hover:shadow-[#e8e8e8]/20"
             >
               Start Exploring
               <ArrowRight className="w-5 h-5" aria-hidden />
@@ -150,7 +150,7 @@ export const HeroSection: React.FC = () => {
             <motion.div
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
-              className="px-8 py-4 bg-transparent border border-white/30 text-white text-base font-semibold rounded-lg inline-flex items-center gap-2.5 transition-all duration-200 hover:border-[#22d3ee] hover:text-[#22d3ee]"
+              className="px-8 py-4 bg-transparent border border-white/30 text-white text-base font-semibold rounded-lg inline-flex items-center gap-2.5 transition-all duration-200 hover:border-white hover:text-white"
             >
               <Terminal className="w-5 h-5" aria-hidden />
               Query Database

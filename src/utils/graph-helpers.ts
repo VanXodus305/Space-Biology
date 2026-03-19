@@ -107,14 +107,14 @@ export function getNodeSize(state: NodeRenderState): number {
 }
 
 /**
- * Restrained grayscale by default, with cyan emphasis only
+ * Restrained grayscale by default, with bright white-gray accent
  * for highlighted / selected paths and white for hover.
  */
 export function getNodeColor(state: NodeRenderState): string {
   const { nodeId, group, hoveredNode, highlightNodes, selectedNodeId } = state;
 
-  if (selectedNodeId === nodeId) return "#22d3ee";
-  if (highlightNodes.size > 0 && highlightNodes.has(nodeId)) return "#22d3ee";
+  if (selectedNodeId === nodeId) return "#e8e8e8";
+  if (highlightNodes.size > 0 && highlightNodes.has(nodeId)) return "#e8e8e8";
   if (hoveredNode === nodeId) return "#ffffff";
   if (highlightNodes.size > 0) return "#1a1a1a";
 
@@ -134,14 +134,14 @@ export function getLinkColorValue(
 ): string {
   if (hasHighlights) {
     return isHighlighted
-      ? "rgba(34, 211, 238, 0.85)"
+      ? "rgba(232, 232, 232, 0.85)"
       : "rgba(255, 255, 255, 0.03)";
   }
   if (
     hoveredNode &&
     (sourceId === hoveredNode || targetId === hoveredNode)
   ) {
-    return "rgba(34, 211, 238, 0.85)";
+    return "rgba(232, 232, 232, 0.85)";
   }
   return "rgba(255, 255, 255, 0.06)";
 }

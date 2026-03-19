@@ -20,13 +20,13 @@ export const Footer: React.FC = () => {
           <div className="flex items-center gap-6">
             <Link
               href="/explore"
-              className="text-sm text-[#a3a3a3] hover:text-[#22d3ee] transition-colors"
+              className="text-sm text-[#a3a3a3] hover:text-white transition-colors"
             >
               Explore
             </Link>
             <Link
               href="/search"
-              className="text-sm text-[#a3a3a3] hover:text-[#22d3ee] transition-colors"
+              className="text-sm text-[#a3a3a3] hover:text-white transition-colors"
             >
               Query
             </Link>

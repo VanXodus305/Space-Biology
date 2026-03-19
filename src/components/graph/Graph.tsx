@@ -163,9 +163,41 @@ export default function KnowledgeGraph() {
     return () => clearTimeout(t1);
   }, [data.nodes.length]);
 
+  const autoRotateCleanupRef = useRef<(() => void) | null>(null);
+
+  const handleEngineStop = useCallback(() => {
+    if (!fgRef.current || data.nodes.length === 0 || loading || !hasPlayedEntryRef.current) return;
+    try {
+      const fg = fgRef.current as unknown as {
+        controls: () => {
+          autoRotate?: boolean;
+          addEventListener?: (e: string, fn: () => void) => void;
+          removeEventListener?: (e: string, fn: () => void) => void;
+        };
+      };
+      const controls = fg.controls();
+      if (controls) {
+        controls.autoRotate = true;
+        (controls as { autoRotateSpeed?: number }).autoRotateSpeed = 0.12;
+        const onStart = () => {
+          controls.autoRotate = false;
+        };
+        if (typeof controls.addEventListener === "function") {
+          controls.addEventListener("start", onStart);
+          autoRotateCleanupRef.current = () => {
+            if (typeof controls.removeEventListener === "function") {
+              controls.removeEventListener("start", onStart);
+            }
+          };
+        }
+      }
+    } catch {
+      /* controls may not be available */
+    }
+  }, [data.nodes.length, loading]);
+
   useEffect(() => {
     if (data.nodes.length === 0 || loading) return;
-    let cleanup: (() => void) | undefined;
     const t2 = setTimeout(() => {
       hasPlayedEntryRef.current = true;
       setPhysicsPreset(SETTLED_PHYSICS);
@@ -173,41 +205,19 @@ export default function KnowledgeGraph() {
         const fg = fgRef.current as {
           d3Force: (a: string, b?: unknown) => unknown;
           d3ReheatSimulation: () => void;
-          controls: () => {
-            autoRotate?: boolean;
-            addEventListener?: (e: string, fn: () => void) => void;
-            removeEventListener?: (e: string, fn: () => void) => void;
-          };
         };
         fg.d3Force("y", null);
         fg.d3ReheatSimulation();
-        try {
-          const controls = fg.controls();
-          if (controls) {
-            controls.autoRotate = true;
-            (controls as { autoRotateSpeed?: number }).autoRotateSpeed = 0.2;
-            const onStart = () => {
-              controls.autoRotate = false;
-            };
-            if (typeof controls.addEventListener === "function") {
-              controls.addEventListener("start", onStart);
-              cleanup = () => {
-                if (typeof controls.removeEventListener === "function") {
-                  controls.removeEventListener("start", onStart);
-                }
-              };
-            }
-          }
-        } catch {
-          /* controls may not be available */
-        }
       }
     }, ENTRY_ANIMATION_DURATION_EXPLORE);
-    return () => {
-      clearTimeout(t2);
-      cleanup?.();
-    };
+    return () => clearTimeout(t2);
   }, [data.nodes.length, loading]);
+
+  useEffect(() => {
+    return () => {
+      autoRotateCleanupRef.current?.();
+    };
+  }, []);
 
   const handleNodeClick = useCallback(
     (node: GraphNode) => {
@@ -303,7 +313,7 @@ export default function KnowledgeGraph() {
                 setHighlightNodes(new Set());
                 setHighlightLinksKeys(new Set());
               }}
-              className="text-[#666666] hover:text-[#22d3ee] p-1 rounded hover:bg-[#1c1c1c] transition-colors focus:outline-none focus:ring-1 focus:ring-[#22d3ee]"
+              className="text-[#666666] hover:text-white p-1 rounded hover:bg-[#1c1c1c] transition-colors focus:outline-none focus:ring-1 focus:ring-[#e8e8e8]"
               aria-label="Clear search"
             >
               <X className="w-4 h-4" />
@@ -393,6 +403,7 @@ export default function KnowledgeGraph() {
             width={undefined}
             height={undefined}
             showNavInfo={false}
+            onEngineStop={handleEngineStop}
             onNodeClick={handleNodeClick}
             onNodeHover={(node: { id?: string | number } | null) => {
               setHoveredNode(node ? String(node.id ?? "") : null);

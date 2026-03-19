@@ -281,7 +281,7 @@ export default function QueryGraphExplorer() {
               <button
                 key={example.label}
                 onClick={() => setQuery(example.query)}
-                className="text-xs px-2.5 py-1 bg-[#1c1c1c] hover:bg-[#262626] border border-[#333] hover:border-[#22d3ee]/40 rounded-md text-[#a3a3a3] hover:text-[#22d3ee] transition-colors focus:outline-none focus:ring-1 focus:ring-[#22d3ee]"
+                className="text-xs px-2.5 py-1 bg-[#1c1c1c] hover:bg-[#262626] border border-[#333] hover:border-[#e8e8e8]/40 rounded-md text-[#a3a3a3] hover:text-white transition-colors focus:outline-none focus:ring-1 focus:ring-[#e8e8e8]"
               >
                 {example.label}
               </button>
@@ -297,7 +297,7 @@ export default function QueryGraphExplorer() {
               }
             }}
             placeholder='MATCH (s)-[p]->(o) WHERE s = "your-query-here"'
-            className="w-full bg-[#0a0a0a] border border-[#262626] text-[#e5e5e5] p-4 rounded-md font-mono text-sm focus:outline-none focus:ring-1 focus:ring-[#22d3ee] focus:border-[#404040] placeholder-[#666666] transition-colors resize-none"
+            className="w-full bg-[#0a0a0a] border border-[#262626] text-[#e5e5e5] p-4 rounded-md font-mono text-sm focus:outline-none focus:ring-1 focus:ring-[#e8e8e8] focus:border-[#404040] placeholder-[#666666] transition-colors resize-none"
             rows={3}
             aria-label="Cypher query input"
           />
@@ -326,7 +326,7 @@ export default function QueryGraphExplorer() {
                   setGraphData({ nodes: [], links: [] });
                   setError(null);
                 }}
-                className="px-3 py-1.5 text-xs bg-[#1c1c1c] hover:bg-[#262626] border border-[#333] hover:border-[#22d3ee]/40 rounded-md text-[#a3a3a3] hover:text-[#22d3ee] transition-colors flex items-center gap-1.5 focus:outline-none focus:ring-1 focus:ring-[#22d3ee]"
+                className="px-3 py-1.5 text-xs bg-[#1c1c1c] hover:bg-[#262626] border border-[#333] hover:border-[#e8e8e8]/40 rounded-md text-[#a3a3a3] hover:text-white transition-colors flex items-center gap-1.5 focus:outline-none focus:ring-1 focus:ring-[#e8e8e8]"
               >
                 <Trash2 className="w-3 h-3" />
                 Clear
@@ -335,7 +335,7 @@ export default function QueryGraphExplorer() {
               <button
                 onClick={runQuery}
                 disabled={!query.trim()}
-                className="px-4 py-1.5 text-xs bg-white hover:bg-[#22d3ee] rounded-md text-black font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 focus:outline-none focus:ring-1 focus:ring-[#22d3ee]"
+                className="px-4 py-1.5 text-xs bg-white hover:bg-[#e8e8e8] rounded-md text-black font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 focus:outline-none focus:ring-1 focus:ring-[#e8e8e8]"
               >
                 <Play className="w-3 h-3" />
                 Execute
@@ -380,7 +380,7 @@ export default function QueryGraphExplorer() {
                 {results.map((t, i) => (
                   <div
                     key={`${t.subject}-${t.predicate}-${t.object}-${i}`}
-                    className="bg-[#1c1c1c] border border-[#262626] hover:border-[#22d3ee]/30 rounded-md p-3 transition-colors"
+                    className="bg-[#1c1c1c] border border-[#262626] hover:border-[#e8e8e8]/30 rounded-md p-3 transition-colors"
                   >
                     <div className="flex items-start gap-3 text-xs">
                       <ChevronRight className="w-3.5 h-3.5 text-[#404040] flex-shrink-0 mt-0.5" aria-hidden />

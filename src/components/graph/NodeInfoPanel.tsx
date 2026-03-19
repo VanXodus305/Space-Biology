@@ -31,22 +31,22 @@ export function NodeInfoPanel({
       style={{ maxHeight }}
     >
       {/* Cyan accent bar at the top to tie into graph emphasis color */}
-      <div className="h-[2px] bg-gradient-to-r from-[#22d3ee] to-[#22d3ee]/20" />
+      <div className="h-[2px] bg-gradient-to-r from-[#e8e8e8] to-[#e8e8e8]/20" />
 
       <div className="sticky top-0 bg-[#141414]/95 backdrop-blur-sm border-b border-[#262626] px-5 py-4 z-10">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <span className="relative flex h-2.5 w-2.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#22d3ee] opacity-40" />
-              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#22d3ee]" />
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#e8e8e8] opacity-40" />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#e8e8e8]" />
             </span>
-            <span className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#22d3ee]">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#e8e8e8]">
               {selectedNode.group === 1 ? "Subject" : "Object"}
             </span>
           </div>
           <button
             onClick={onClose}
-            className="text-[#666666] hover:text-[#22d3ee] p-1 rounded-md hover:bg-[#1c1c1c] transition-colors focus:outline-none focus:ring-2 focus:ring-[#22d3ee]"
+            className="text-[#666666] hover:text-white p-1 rounded-md hover:bg-[#1c1c1c] transition-colors focus:outline-none focus:ring-2 focus:ring-[#e8e8e8]"
             aria-label="Close node details"
           >
             <X className="w-4 h-4" />
@@ -60,7 +60,7 @@ export function NodeInfoPanel({
       <div className="px-5 py-4">
         <div className="flex gap-3">
           <div className="flex-1 bg-[#1c1c1c] border border-[#262626] rounded-lg p-3 text-center">
-            <div className="text-xl font-bold text-[#22d3ee] tabular-nums">
+            <div className="text-xl font-bold text-[#e8e8e8] tabular-nums">
               {selectedNode.connections}
             </div>
             <div className="text-[10px] text-[#666666] mt-0.5 uppercase tracking-wider">
@@ -109,14 +109,14 @@ export function NodeInfoPanel({
                 onClick={() => {
                   if (connNode) onNodeClick(connNode as GraphNode);
                 }}
-                className="group w-full flex items-center gap-2 bg-[#1c1c1c] hover:bg-[#1f1f1f] border border-[#262626] hover:border-[#22d3ee]/30 rounded px-3 py-2 text-left transition-colors focus:outline-none focus:ring-1 focus:ring-[#22d3ee]"
+                className="group w-full flex items-center gap-2 bg-[#1c1c1c] hover:bg-[#1f1f1f] border border-[#262626] hover:border-[#e8e8e8]/30 rounded px-3 py-2 text-left transition-colors focus:outline-none focus:ring-1 focus:ring-[#e8e8e8]"
               >
-                <span className="h-1.5 w-1.5 rounded-full bg-[#555] group-hover:bg-[#22d3ee] transition-colors flex-shrink-0" />
-                <span className="text-xs text-[#a3a3a3] group-hover:text-[#22d3ee] transition-colors truncate">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#555] group-hover:bg-white transition-colors flex-shrink-0" />
+                <span className="text-xs text-[#a3a3a3] group-hover:text-white transition-colors truncate">
                   {nodeId}
                 </span>
                 {connNode?.connections != null && connNode.connections > 0 && (
-                  <span className="ml-auto text-[10px] tabular-nums text-[#555] group-hover:text-[#22d3ee]/60 transition-colors flex-shrink-0">
+                  <span className="ml-auto text-[10px] tabular-nums text-[#555] group-hover:text-[#e8e8e8]/60 transition-colors flex-shrink-0">
                     {connNode.connections}
                   </span>
                 )}
