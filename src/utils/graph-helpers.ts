@@ -279,7 +279,7 @@ export function applyEntryPositions<T extends GraphNodeWithPosition>(
   const seed = options?.seed ?? 42;
   const rng = seededRandom(seed);
 
-  nodes.forEach((node, i) => {
+  nodes.forEach((node) => {
     const group = node.group ?? 1;
     const bandOffset = (group - 1) * 15;
     node.x = (rng() - 0.5) * 2 * spread + bandOffset * (rng() - 0.5);

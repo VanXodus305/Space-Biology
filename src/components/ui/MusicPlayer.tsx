@@ -34,7 +34,7 @@ export const MusicPlayer = () => {
   useEffect(() => {
     const audio = new Audio("/track.mp3");
     audio.loop = true;
-    audio.volume = volume;
+    audio.volume = 0.2;
 
     audio.addEventListener("canplaythrough", () => {
       setTrackAvailable(true);

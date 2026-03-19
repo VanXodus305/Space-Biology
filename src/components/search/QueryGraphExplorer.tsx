@@ -39,9 +39,11 @@ const ForceGraph3D = dynamic(
   () =>
     import("react-force-graph-3d").then((mod) => {
       const FG = mod.default;
-      return React.forwardRef<unknown, React.ComponentProps<typeof FG>>((props, ref) => (
+      const Wrapped = React.forwardRef<unknown, React.ComponentProps<typeof FG>>((props, ref) => (
         <FG ref={ref as never} {...props} />
       ));
+      Wrapped.displayName = "ForceGraph3D";
+      return Wrapped;
     }),
   { ssr: false }
 );
